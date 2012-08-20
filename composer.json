@@ -1,0 +1,34 @@
+{
+    "name":"riverline/worker-bundle",
+    "description":"Symfony2 Bundle to use queue with workers",
+    "keywords":["worker", "queue", "bundle", "symfony2"],
+    "type":"library",
+    "license":"MIT",
+    "authors":[
+        {
+            "name":"Romain Cambien",
+            "email":"romain@riverline.fr"
+        },
+        {
+            "name":"Riverline",
+            "homepage":"http://www.riverline.fr"
+        }
+    ],
+    "homepage": "https://github.com/rcambien/riverline-worker-bundle",
+    "require":{
+        "php":                          ">=5.3",
+        "symfony/console":              "*",
+        "symfony/dependency-injection": "*",
+        "symfony/config":               "*",
+        "symfony/http-kernel":          "*"
+    },
+    "require-dev": {
+        "amazonwebservices/aws-sdk-for-php": "*",
+        "predis/predis":                     "*"
+    },
+    "autoload":{
+        "psr-0":{
+            "Riverline\\WorkerBundle": "src/"
+        }
+    }
+}

@@ -1,5 +1,7 @@
 # README
 
+[![Build Status](https://secure.travis-ci.org/rcambien/riverline-worker-bundle.png)](http://travis-ci.org/rcambien/riverline-worker-bundle)
+
 ## What is Riverline\WorkerBundle
 
 ``Riverline\WorkerBundle`` add abstraction to queue providers and allow to create Workers to consume queue workload.

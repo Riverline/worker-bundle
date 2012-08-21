@@ -13,7 +13,7 @@
     <testsuites>
         <testsuite name="WorkerBundle Test Suite">
             <directory>tests/Riverline/WorkerBundle/DependencyInjection</directory>
-            <file>tests/Riverline/WorkerBundle/Provider/SemaphoreTest.php</file>
+            <file>tests/Riverline/WorkerBundle/Provider/MockupTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

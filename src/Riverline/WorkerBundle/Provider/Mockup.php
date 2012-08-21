@@ -4,14 +4,14 @@ namespace Riverline\WorkerBundle\Provider;
 
 class Mockup implements ProviderInterface
 {
-    protected $queues;
+    static protected $queues;
 
     public function put($queueName, $workload)
     {
-        if (isset($this->queues[$queueName])) {
-            array_push($this->queues[$queueName], $workload);
+        if (isset(self::$queues[$queueName])) {
+            self::$queues[$queueName][] = $workload;
         } else {
-            $this->queues[$queueName] = array($workload);
+            self::$queues[$queueName] = array($workload);
         }
     }
 
@@ -21,8 +21,8 @@ class Mockup implements ProviderInterface
             throw new \LogicException("Array provider doesn't support timeout");
         }
 
-        if (isset($this->queues[$queueName]) && count($this->queues[$queueName])) {
-            array_shift($this->queues[$queueName]);
+        if (isset(self::$queues[$queueName]) && count(self::$queues[$queueName])) {
+            return array_shift(self::$queues[$queueName]);
         } else {
             return null;
         }
@@ -30,8 +30,8 @@ class Mockup implements ProviderInterface
 
     public function count($queueName)
     {
-        if (isset($this->queues[$queueName])) {
-            return count($this->queues[$queueName]);
+        if (isset(self::$queues[$queueName])) {
+            return count(self::$queues[$queueName]);
         } else {
             return 0;
         }

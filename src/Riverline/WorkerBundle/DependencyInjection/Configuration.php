@@ -28,7 +28,6 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('class')->isRequired()->end()
                             ->arrayNode('arguments')
-                                ->useAttributeAsKey('key')
                                 ->defaultValue(array())
                                 ->prototype('variable')->end()
                             ->end()

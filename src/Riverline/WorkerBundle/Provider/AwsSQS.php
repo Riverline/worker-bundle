@@ -2,12 +2,19 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class AwsSQS implements ProviderInterface
+use Riverline\WorkerBundle\Queue\Queue;
+
+class AwsSQS extends BaseProvider
 {
     /**
      * @var \AmazonSQS
      */
     protected $sqs;
+
+    /**
+     * @var array
+     */
+    protected $queueUrls = array();
 
     public function __construct($awsConfiguration, $region = null)
     {
@@ -21,22 +28,153 @@ class AwsSQS implements ProviderInterface
         }
     }
 
-    public function put($queueName, $workload)
+    /**
+     * {@inheritdoc}
+     */
+    public function createQueue($queueName, array $queueOptions = array())
     {
-        $this->parseResponse($this->sqs->send_message($queueName, serialize($workload)));
+        $attributes = array();
+        foreach($queueOptions as $name => $value) {
+            $attributes[] = array(
+                'Name'  => $name,
+                'Value' => $value,
+            );
+        }
+
+        // Enable Long Polling by default
+        if (! isset($attributes['ReceiveMessageWaitTimeSeconds'])) {
+            $attributes[] = array(
+                'Name'  => 'ReceiveMessageWaitTimeSeconds',
+                'Value' => 20,
+            );
+        }
+
+        $response = $this->parseResponse($this->sqs->create_queue($queueName, array('Attribute' => $attributes)));
+
+        return new Queue($this->extractQueueNameFromUrl((string)$response->CreateQueueResult->QueueUrl), $this);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteQueue($queueName)
+    {
+        $this->parseResponse($this->sqs->delete_queue($this->getQueueUrl($queueName)));
+
+        return true;
+    }
+
+    /**
+     * Extract queue name from AWS queue url.
+     *
+     * @param string $queueUrl
+     * @return string Queue name
+     */
+    private function extractQueueNameFromUrl($queueUrl)
+    {
+        return substr(strrchr((string)$queueUrl, '/'), 1);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQueueOptions($queueName)
+    {
+        $response = $this->parseResponse($this->sqs->get_queue_attributes($this->getQueueUrl($queueName), array('AttributeName' => 'All')));
+
+        $attributes = array();
+        foreach($response->GetQueueAttributesResult->Attribute as $attribute) {
+            $attributes[(string)$attribute->Name] = (string)$attribute->Value;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listQueues($queueNamePrefix = null)
+    {
+        $options = array();
+        if (! is_null($queueNamePrefix)) {
+            $options['QueueNamePrefix'] = $queueNamePrefix;
+        }
+
+        $response = $this->parseResponse($this->sqs->list_queues($options));
+
+        $queues = array();
+        foreach($response->ListQueuesResult->QueueUrl as $queueUrl) {
+            $queues[] = $this->extractQueueNameFromUrl($queueUrl);
+        }
+
+        return $queues;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function queueExists($queueName)
+    {
+        try {
+            $queueUrl = $this->parseResponse($this->sqs->get_queue_url($queueName));
+        } catch(\RuntimeException $re) {
+            if ('AWS.SimpleQueueService.NonExistentQueue' === $re->getMessage()) {
+                return false;
+            }
+
+            throw $re;
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function multiPut($queueName, array $workloads)
+    {
+        $queueUrl = $this->getQueueUrl($queueName);
+
+        $batchWorkloads  = array();
+        $batchWorkloadId = 1;
+        foreach($workloads as $workload) {
+            $batchWorkloads[] = array(
+                'Id'          => $batchWorkloadId++,
+                'MessageBody' => serialize($workload)
+            );
+        }
+
+        $response = $this->sqs->send_message_batch($queueUrl, $batchWorkloads);
+
+        $this->parseResponse($response);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function put($queueName, $workload)
+    {
+        $queueUrl = $this->getQueueUrl($queueName);
+        $this->parseResponse($this->sqs->send_message($queueUrl, serialize($workload)));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function get($queueName, $timeout = null)
     {
         // Simulate timeout
         $tic = time();
 
+        /** @todo update for Long Polling attribute */
+
         do {
-            $workload = $this->parseResponse($this->sqs->receive_message($queueName))
+            $queueUrl = $this->getQueueUrl($queueName);
+            $workload = $this->parseResponse($this->sqs->receive_message($queueUrl))
                 ->ReceiveMessageResult->Message;
             if ($workload) {
-                $this->parseResponse($this->sqs->delete_message($queueName, strval($workload->ReceiptHandle)));
-                if (md5($workload->Body) == $workload->MD5OfBody) {
+                $this->parseResponse($this->sqs->delete_message($queueUrl, strval($workload->ReceiptHandle)));
+                if (md5((string)$workload->Body) == $workload->MD5OfBody) {
                     return unserialize($workload->Body);
                 } else {
                     throw new \RuntimeException('Corrupted response');
@@ -50,9 +188,26 @@ class AwsSQS implements ProviderInterface
         return null;
     }
 
+    /**
+     * @param string $queueName
+     * @return string AWS queue url
+     */
+    private function getQueueUrl($queueName)
+    {
+        if (! isset($this->queueUrls[$queueName])) {
+            $this->queueUrls[$queueName] = (string)$this->parseResponse($this->sqs->get_queue_url($queueName))->GetQueueUrlResult->QueueUrl;
+        }
+
+        return $this->queueUrls[$queueName];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function count($queueName)
     {
-        $response = $this->sqs->get_queue_size($queueName);
+        $queueUrl = $this->getQueueUrl($queueName);
+        $response = $this->sqs->get_queue_size($queueUrl);
         if (is_numeric($response)) {
             return $response;
         } else {
@@ -71,7 +226,26 @@ class AwsSQS implements ProviderInterface
         if ($response->isOk()) {
             return $response->body;
         } else {
-            throw new \RuntimeException($response->body->Error->Message);
+            throw new \RuntimeException($response->body->Error->Code);
         }
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateQueue($queueName, array $queueOptions = array())
+    {
+        $attributes = array();
+        foreach($queueOptions as $name => $value) {
+            $attributes[] = array(
+                'Name'  => $name,
+                'Value' => $value,
+            );
+        }
+
+        $this->parseResponse($this->sqs->set_queue_attributes($this->getQueueUrl($queueName), $attributes));
+
+        return true;
+    }
+
 }

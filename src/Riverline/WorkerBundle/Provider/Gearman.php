@@ -2,7 +2,7 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class Gearman implements ProviderInterface
+class Gearman extends BaseProvider
 {
     /**
      * @var array

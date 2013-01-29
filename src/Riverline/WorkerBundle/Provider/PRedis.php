@@ -2,7 +2,7 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class PRedis implements ProviderInterface
+class PRedis extends BaseProvider
 {
     protected $predis;
 

@@ -29,6 +29,15 @@ class Queue
     }
 
     /**
+     * Add workloads in the queue
+     * @param array $workloads
+     */
+    public function multiPut(array $workloads)
+    {
+        $this->provider->multiPut($this->name, $workloads);
+    }
+
+    /**
      * Add a workload in the queue
      * @param $workload
      */

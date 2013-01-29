@@ -29,6 +29,16 @@ abstract class Worker extends Command implements ContainerAwareInterface
      */
     private $queueName;
 
+    /**
+     * @var int
+     */
+    private $limit = 0;
+
+    /**
+     * @var int
+     */
+    private $count = 0;
+
     final protected function configure()
     {
         // Generic Options
@@ -48,23 +58,38 @@ abstract class Worker extends Command implements ContainerAwareInterface
     final protected function execute(InputInterface $input, OutputInterface $output)
     {
         $queue = $this->getQueue();
-        $limit = intval($input->getOption('worker-limit'));
-        $count = 0;
 
+        $this->limit = intval($input->getOption('worker-limit'));
         while(
-            (0 === $limit || $count <= $limit) // No limit or limit not reach
+               $this->canContinueExecution()
             && null !== ($workload = $queue->get($input->getOption('worker-wait-timeout')))
         ) {
-            $count++;
+            $this->count++;
 
             try {
                 $this->executeWorker($input, $output, $workload);
             } catch (\Exception $e) {
                 if ($input->getOption('worker-exit-on-exception')) {
+                    throw $e;
                     break;
                 }
             }
         }
+    }
+
+    /**
+     * Indicates if the worker can process another workload.
+     * Reasons :
+     *   - limit reached
+     *   - memory limit reached
+     *   - custom limit reached
+     *
+     * @return boolean
+     */
+    protected function canContinueExecution()
+    {
+        // No limit or limit not reach
+        return (0 === $this->limit || $this->count <= $this->limit);
     }
 
     protected function configureWorker()

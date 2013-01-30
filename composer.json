@@ -10,11 +10,15 @@
             "email":"romain@riverline.fr"
         },
         {
+            "name":"Sebastien Porati",
+            "email":"sebastien@riverline.fr"
+        },
+        {
             "name":"Riverline",
             "homepage":"http://www.riverline.fr"
         }
     ],
-    "homepage": "https://github.com/rcambien/riverline-worker-bundle",
+    "homepage": "https://bitbucket.org/webrivage/riverline-worker-bundle",
     "require":{
         "php":                          ">=5.3",
         "symfony/console":              "*",

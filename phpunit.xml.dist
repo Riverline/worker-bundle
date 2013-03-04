@@ -3,12 +3,13 @@
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
     <php>
         <!-- AWS SQS -->
-        <var name="AWS_ACCESS" value="" />
-        <var name="AWS_SECRET" value="" />
-        <var name="AWS_REGION" value="" />
-        <var name="AWS_QUEUE"  value="" />
+        <var name="AWS_ACCESS"        value="" />
+        <var name="AWS_SECRET"        value="" />
+        <var name="AWS_REGION"        value="" />
+        <var name="AWS_REGION_DOMAIN" value="" />
+        <var name="AWS_QUEUE"         value="" />
         <!-- PRedis -->
-        <var name="PREDIS_SERVER" value="" />
+        <var name="PREDIS_SERVER"     value="" />
     </php>
     <testsuites>
         <testsuite name="WorkerBundle Test Suite">

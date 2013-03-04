@@ -28,6 +28,7 @@
     },
     "require-dev": {
         "amazonwebservices/aws-sdk-for-php": "*",
+        "aws/aws-sdk-php":                   "*",
         "predis/predis":                     "*"
     },
     "autoload":{

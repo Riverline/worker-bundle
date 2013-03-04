@@ -2,58 +2,57 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class AwsSQSTest extends \PHPUnit_Framework_TestCase
+class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * @var \Riverline\WorkerBundle\Provider\AwsSQS
+     * @var \Riverline\WorkerBundle\Provider\AwsSQSv2
      */
     private $provider;
 
     public function setUp()
     {
-        $this->provider = new AwsSQS(array(
-                'key'    => $GLOBALS['AWS_ACCESS'],
-                'secret' => $GLOBALS['AWS_SECRET']
-            ),
-            $GLOBALS['AWS_REGION_DOMAIN']
-        );
+        $this->provider = new AwsSQSv2(array(
+            'key'    => $GLOBALS['AWS_ACCESS'],
+            'secret' => $GLOBALS['AWS_SECRET'],
+            'region' => $GLOBALS['AWS_REGION']
+        ));
     }
 
     public function testCreateQueue()
     {
-        $newQueue = $this->provider->createQueue("RiverlineWorkerBundleTest_create", array('VisibilityTimeout' => '15'));
+        $newQueue = $this->provider->createQueue("RiverlineWorkerBundleTest_create_v2", array('VisibilityTimeout' => '15'));
 
         $this->assertTrue($newQueue instanceof \Riverline\WorkerBundle\Queue\Queue);
     }
 
     public function testPutArray()
     {
-        $this->provider->put("RiverlineWorkerBundleTest_create", array('name' => 'Romain'));
+        $this->provider->put("RiverlineWorkerBundleTest_create_v2", array('name' => 'Romain'));
     }
 
     public function testCount()
     {
-        $count = $this->provider->count("RiverlineWorkerBundleTest_create");
+        $count = $this->provider->count("RiverlineWorkerBundleTest_create_v2");
 
         $this->assertEquals(1, $count);
     }
 
     public function testGetArray()
     {
-        $workload = $this->provider->get("RiverlineWorkerBundleTest_create");
+        $workload = $this->provider->get("RiverlineWorkerBundleTest_create_v2");
 
         $this->assertSame(array('name' => 'Romain'), $workload);
     }
 
-//    public function testTimeout()
-//    {
-//        $tic = time();
-//
-//        $this->provider->get("RiverlineWorkerBundleTest_create", 3);
-//
-//        $this->assertGreaterThanOrEqual(3, time() - $tic);
-//    }
+    public function testTimeout()
+    {
+        $tic = time();
+
+        $this->provider->get("RiverlineWorkerBundleTest_create_v2", 3);
+
+        $this->assertGreaterThanOrEqual(3, time() - $tic);
+    }
 
     public function testMultiPut()
     {
@@ -62,18 +61,18 @@ class AwsSQSTest extends \PHPUnit_Framework_TestCase
             $workloads[] = "workload$i";
         }
 
-        $this->provider->multiPut("RiverlineWorkerBundleTest_create", $workloads);
+        $this->provider->multiPut("RiverlineWorkerBundleTest_create_v2", $workloads);
 
-        sleep(2);
+        sleep(5);
 
-        $count = $this->provider->count("RiverlineWorkerBundleTest_create");
+        $count = $this->provider->count("RiverlineWorkerBundleTest_create_v2");
 
         $this->assertEquals(10, $count);
     }
 
     public function testDeleteQueue()
     {
-        $deleted = $this->provider->deleteQueue("RiverlineWorkerBundleTest_create");
+        $deleted = $this->provider->deleteQueue("RiverlineWorkerBundleTest_create_v2");
 
         $this->assertTrue($deleted);
     }

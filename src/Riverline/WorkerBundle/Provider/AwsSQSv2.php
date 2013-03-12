@@ -34,10 +34,10 @@ class AwsSQSv2 extends BaseProvider
      */
     public function createQueue($queueName, array $queueOptions = array())
     {
-//        // Enable Long Polling by default
-//        if (! isset($queueOptions[QueueAttribute::RECEIVE_MESSAGE_WAIT_TIME_SECONDS])) {
-//            $queueOptions[QueueAttribute::RECEIVE_MESSAGE_WAIT_TIME_SECONDS] = 20;
-//        }
+        // Enable Long Polling by default
+        if (! isset($queueOptions[QueueAttribute::RECEIVE_MESSAGE_WAIT_TIME_SECONDS])) {
+            $queueOptions[QueueAttribute::RECEIVE_MESSAGE_WAIT_TIME_SECONDS] = 20;
+        }
 
         $response = $this->sqs->createQueue(array(
             'QueueName'  => $queueName,
@@ -121,9 +121,10 @@ class AwsSQSv2 extends BaseProvider
         $batchWorkloads  = array();
         $batchWorkloadId = 1;
         foreach($workloads as $workload) {
+            $workload = base64_encode(gzcompress(serialize($workload), 9));
             $batchWorkloads[] = array(
                 'Id'          => $batchWorkloadId++,
-                'MessageBody' => serialize($workload)
+                'MessageBody' => $workload
             );
         }
 
@@ -139,9 +140,10 @@ class AwsSQSv2 extends BaseProvider
     public function put($queueName, $workload)
     {
         $queueUrl = $this->getQueueUrl($queueName);
+        $workload = base64_encode(gzcompress(serialize($workload), 9));
         $this->sqs->sendMessage(array(
             'QueueUrl'    => $queueUrl,
-            'MessageBody' => serialize($workload)
+            'MessageBody' => $workload
         ));
     }
 
@@ -170,7 +172,7 @@ class AwsSQSv2 extends BaseProvider
                     'ReceiptHandle' => $workload['ReceiptHandle']
                 ));
                 if (md5($workload['Body']) == $workload['MD5OfBody']) {
-                    return unserialize($workload['Body']);
+                    return unserialize(gzuncompress(base64_decode($workload['Body'])));
                 } else {
                     throw new \RuntimeException('Corrupted response');
                 }
@@ -185,7 +187,7 @@ class AwsSQSv2 extends BaseProvider
 
     /**
      * @param string $queueName
-     * @throws \Aws\Sqs\Exception\SqsException
+     * @throws \Aws\Sqs\Exception\SqsException|\Exception
      * @return string AWS queue url
      */
     private function getQueueUrl($queueName)

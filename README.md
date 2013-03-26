@@ -74,6 +74,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Riverline\WorkerBundle\Command\Worker;
+use Riverline\WorkerBundle\Command\WorkerControlCodes;
 
 class DemoWorkerCommand extends Worker
 {
@@ -92,6 +93,15 @@ class DemoWorkerCommand extends Worker
     protected function executeWorker(InputInterface $input, OutputInterface $output, $workload)
     {
         $output->writeln($workload);
+
+        // Stop worker and dot not process other workloads
+        if ($someReasonToStopAndExit)
+        {
+            return WorkerControlCodes::STOP_EXECUTION;
+        }
+
+        // else continue
+        return WorkerControlCodes::CAN_CONTINUE;
     }
 }
 
@@ -104,10 +114,10 @@ $ php app/console demo-worker
 Hello World
 ```
 
-You can pass queue configurations.
+You can pass options.
 
 ```sh
-$ php app/console --worker-wait-timeout=60 --worker-limit=10 --worker-exit-on-exception
+$ php app/console --worker-wait-timeout=60 --worker-limit=10 --memory-limit=128 --worker-exit-on-exception
 ```
 
-This command wait 60 seconds for a workload from the queue, will process a maximum of 10 workloads and exit if the ``executeWorker()`` throw an exception
+This command wait 60 seconds for a workload from the queue, will process a maximum of 10 workloads or exit when usaed memory exceed 128Mb and exit if the ``executeWorker()`` throw an exception.

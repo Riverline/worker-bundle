@@ -29,6 +29,24 @@ class Queue
     }
 
     /**
+     * @return string Queue name
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Delete queue.
+     *
+     * @return boolean
+     */
+    public function delete()
+    {
+        return $this->provider->deleteQueue($this->getName());
+    }
+
+    /**
      * Add workloads in the queue
      * @param array $workloads
      */

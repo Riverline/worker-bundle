@@ -79,7 +79,7 @@ abstract class Worker extends Command implements ContainerAwareInterface
             return 0;
         }
 
-        while($this->canContinueExecution()) {
+        while(WorkerControlCodes::CAN_CONTINUE === $this->canContinueExecution()) {
             $workload = $queue->get($input->getOption('worker-wait-timeout'));
             if (null === $workload) {
                 $controlCode = $this->onNoWorkload($queue);
@@ -137,7 +137,7 @@ abstract class Worker extends Command implements ContainerAwareInterface
 
         // Memory limit
         $memory = memory_get_usage(true) / 1024 / 1024;
-        if ($memory > $this->memoryLimit) {
+        if ($this->memoryLimit > 0 && $memory > $this->memoryLimit) {
             return WorkerControlCodes::MEMORY_LIMIT_REACHED;
         }
 

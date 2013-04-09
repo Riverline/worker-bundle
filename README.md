@@ -9,7 +9,7 @@
 ## Requirements
 
 * PHP 5.3
-* Symfony 2.0
+* Symfony 2.x
 
 ## Installation
 

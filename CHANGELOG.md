@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.1.1
+-----
+
+ * fix limits (worker-limit /memory-limit) bugs
+
 1.1.0
 -----
 

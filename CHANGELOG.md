@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.1.2
+-----
+
+ * onShutdown function is now called when worker-limit or memory-limit are reached
+
 1.1.1
 -----
 

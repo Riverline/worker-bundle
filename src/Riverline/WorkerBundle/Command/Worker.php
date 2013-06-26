@@ -79,7 +79,7 @@ abstract class Worker extends Command implements ContainerAwareInterface
             return 0;
         }
 
-        while(WorkerControlCodes::CAN_CONTINUE === $this->canContinueExecution()) {
+        while(WorkerControlCodes::CAN_CONTINUE === ($controlCode = $this->canContinueExecution())) {
             $workload = $queue->get($input->getOption('worker-wait-timeout'));
             if (null === $workload) {
                 $controlCode = $this->onNoWorkload($queue);
@@ -107,6 +107,8 @@ abstract class Worker extends Command implements ContainerAwareInterface
                 }
             }
         }
+
+        return $this->shutdown($controlCode);
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output)

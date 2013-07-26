@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.1.3
+-----
+
+ * fix worker-limit option
+
 1.1.2
 -----
 

@@ -133,7 +133,7 @@ abstract class Worker extends Command implements ContainerAwareInterface
     protected function canContinueExecution()
     {
         // Workload limit
-        if ($this->limit > 0 && $this->workloadProcessed > $this->limit) {
+        if ($this->limit > 0 && $this->workloadProcessed >= $this->limit) {
             return WorkerControlCodes::WORKLOAD_LIMIT_REACHED;
         }
 

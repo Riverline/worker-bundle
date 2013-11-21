@@ -55,6 +55,7 @@ class AwsSQSv2 extends BaseProvider
         $this->sqs->deleteQueue(array(
             'QueueUrl' => $this->getQueueUrl($queueName)
         ));
+        unset($this->queueUrls[$queueName]);
 
         return true;
     }

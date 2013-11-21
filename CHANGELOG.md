@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.1.4
+-----
+
+ * fix amazon SQSv2 provider
+
 1.1.3
 -----
 

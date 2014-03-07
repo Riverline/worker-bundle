@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+1.1.5
+-----
+
+ * add File provider (for test purpose)
+
+1.1.4
+-----
+
+ * fix amazon SQSv2 provider
+
 1.1.3
 -----
 

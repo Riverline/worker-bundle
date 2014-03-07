@@ -29,6 +29,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('class')->isRequired()->end()
                             ->arrayNode('arguments')
                                 ->defaultValue(array())
+                                ->performNoDeepMerging()
                                 ->prototype('variable')->end()
                             ->end()
                         ->end()

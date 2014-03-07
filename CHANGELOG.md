@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.1.5
+-----
+
+ * add File provider (for test purpose)
+
 1.1.4
 -----
 

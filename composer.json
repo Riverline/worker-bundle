@@ -18,7 +18,7 @@
             "homepage":"http://www.riverline.fr"
         }
     ],
-    "homepage": "https://bitbucket.org/webrivage/riverline-worker-bundle",
+    "homepage": "https://github.com/Riverline/worker-bundle",
     "require":{
         "php":                          ">=5.3",
         "symfony/console":              "*",

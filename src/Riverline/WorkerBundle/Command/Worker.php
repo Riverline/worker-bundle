@@ -33,7 +33,7 @@ abstract class Worker extends Command implements ContainerAwareInterface
     /**
      * @var \Symfony\Component\Console\Output\OutputInterface
      */
-    private $ouput;
+    private $output;
 
     /**
      * @var string
@@ -55,6 +55,11 @@ abstract class Worker extends Command implements ContainerAwareInterface
      */
     private $workloadProcessed = 0;
 
+    /**
+     * @var Queue
+     */
+    protected $queue;
+
     final protected function configure()
     {
         // Generic Options
@@ -72,14 +77,19 @@ abstract class Worker extends Command implements ContainerAwareInterface
         }
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     final protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $queue = $this->getQueue();
-        if (null === $queue) {
-            return 0;
-        }
-
         while(WorkerControlCodes::CAN_CONTINUE === ($controlCode = $this->canContinueExecution())) {
+            $queue = $this->getQueue();
+            if (null === $queue) {
+                return $this->shutdown(WorkerControlCodes::STOP_EXECUTION);
+            }
+
             $workload = $queue->get($input->getOption('worker-wait-timeout'));
             if (null === $workload) {
                 $controlCode = $this->onNoWorkload($queue);
@@ -111,10 +121,14 @@ abstract class Worker extends Command implements ContainerAwareInterface
         return $this->shutdown($controlCode);
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        $this->input = $input;
-        $this->ouput = $output;
+        $this->input    = $input;
+        $this->output   = $output;
 
         // Limits
         $this->limit       = intval($input->getOption('worker-limit'));
@@ -171,7 +185,7 @@ abstract class Worker extends Command implements ContainerAwareInterface
      */
     protected function onException(Queue $queue, \Exception $exception)
     {
-        $this->getOuput()->writeln("Exception during workload processing for queue {$queue->getName()}. Class=".get_class($exception).". Message={$exception->getMessage()}. Code={$exception->getCode()}");
+        $this->getOutput()->writeln("Exception during workload processing for queue {$queue->getName()}. Class=".get_class($exception).". Message={$exception->getMessage()}. Code={$exception->getCode()}");
 
         return WorkerControlCodes::STOP_EXECUTION;
     }
@@ -221,13 +235,23 @@ abstract class Worker extends Command implements ContainerAwareInterface
     }
 
     /**
-     * Return command output interface.
-     *
+     * Return command output interface - compatibily layer
+     * @deprecated
      * @return \Symfony\Component\Console\Output\OutputInterface
      */
     protected function getOuput()
     {
-        return $this->ouput;
+        return $this->getOutput();
+    }
+
+    /**
+     * Return command output interface.
+     *
+     * @return \Symfony\Component\Console\Output\OutputInterface
+     */
+    protected function getOutput()
+    {
+        return $this->output;
     }
 
     /**
@@ -236,7 +260,10 @@ abstract class Worker extends Command implements ContainerAwareInterface
      */
     protected function getQueue()
     {
-        return $this->getContainer()->get('riverline_worker.queue.'.$this->queueName);
+        if ($this->queue === null) {
+            $this->queue = $this->getContainer()->get('riverline_worker.queue.'.$this->queueName);
+        }
+        return $this->queue;
     }
 
     /**
@@ -245,6 +272,14 @@ abstract class Worker extends Command implements ContainerAwareInterface
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getQueueName()
+    {
+        return $this->queueName;
     }
 
     /**

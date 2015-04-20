@@ -153,35 +153,29 @@ class AwsSQSv2 extends BaseProvider
      */
     public function get($queueName, $timeout = null)
     {
-        // Simulate timeout
-        $tic = time();
+        $queueUrl = $this->getQueueUrl($queueName);
+        $options = array(
+            'QueueUrl'            => $queueUrl,
+            'MaxNumberOfMessages' => 1,
+        );
+        if ($timeout > 0) {
+            $options['WaitTimeSeconds'] = $timeout;
+        }
+        $response = $this->sqs->receiveMessage($options);
 
-        /** @todo update for Long Polling attribute */
+        if (count($response['Messages']) > 0) {
+            $workload = $response['Messages'][0];
 
-        do {
-            $queueUrl = $this->getQueueUrl($queueName);
-            $response = $this->sqs->receiveMessage(array(
-                'QueueUrl'            => $queueUrl,
-                'MaxNumberOfMessages' => 1,
+            $this->sqs->deleteMessage(array(
+                'QueueUrl'      => $queueUrl,
+                'ReceiptHandle' => $workload['ReceiptHandle']
             ));
-
-            if (count($response['Messages']) > 0) {
-                $workload = $response['Messages'][0];
-
-                $this->sqs->deleteMessage(array(
-                    'QueueUrl'      => $queueUrl,
-                    'ReceiptHandle' => $workload['ReceiptHandle']
-                ));
-                if (md5($workload['Body']) == $workload['MD5OfBody']) {
-                    return unserialize(gzuncompress(base64_decode($workload['Body'])));
-                } else {
-                    throw new \RuntimeException('Corrupted response');
-                }
+            if (md5($workload['Body']) == $workload['MD5OfBody']) {
+                return unserialize(gzuncompress(base64_decode($workload['Body'])));
             } else {
-                // Wait
-                sleep(1);
+                throw new \RuntimeException('Corrupted response');
             }
-        } while(null !== $timeout && (time() - $tic < $timeout));
+        }
 
         return null;
     }

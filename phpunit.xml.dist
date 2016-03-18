@@ -8,6 +8,7 @@
         <var name="AWS_REGION"        value="" />
         <var name="AWS_REGION_DOMAIN" value="" />
         <var name="AWS_QUEUE"         value="" />
+        <var name="AWS_VERSION"       value="latest" />
         <!-- File -->
         <var name="FILE_DIRECTORY"    value="" />
         <!-- PRedis -->

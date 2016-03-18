@@ -24,11 +24,20 @@ riverline_worker:
             class: Riverline\WorkerBundle\Provider\PRedis
             arguments:
                 - { host: redis.example.com }
-        sqs:
+        sqs: #v1
             class: Riverline\WorkerBundle\Provider\AwsSQS
             arguments:
                 - { key: xxxxxx, secret: xxxxx }
                 - sqs.eu-west-1.amazonaws.com
+        sqs: #v3
+            class: Riverline\WorkerBundle\Provider\AwsSQSv3
+            arguments:
+                config:
+                    version: "latest"
+                    region: "us-west-2"
+                    credentials:
+                        key: "xxxxxx"
+                        secret: "xxxxxx"
         gearman:
             class: Riverline\WorkerBundle\Provider\Gearman
             arguments:

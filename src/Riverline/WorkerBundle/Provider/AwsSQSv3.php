@@ -169,7 +169,11 @@ class AwsSQSv3 extends BaseProvider
                 'QueueUrl' => $queueUrl,
                 'ReceiptHandle' => $workload['ReceiptHandle']
             ));
-            return $workload;
+            if (md5($workload['Body']) == $workload['MD5OfBody']) {
+                return unserialize(gzuncompress(base64_decode($workload['Body'])));
+            } else {
+                throw new \RuntimeException('Corrupted response');
+            }
         }
 
         return null;

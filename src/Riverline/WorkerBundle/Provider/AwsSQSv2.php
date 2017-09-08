@@ -194,7 +194,7 @@ class AwsSQSv2 extends BaseProvider
                 ));
                 $this->queueUrls[$queueName] = $response['QueueUrl'];
             } catch(SqsException $e) {
-                if ('AWS.SimpleQueueService.NonExistentQueue' === $e->getExceptionCode()) {
+                if ('AWS.SimpleQueueService.NonExistentQueue' === $e->getAwsErrorCode()) {
                     // Non existing queue
                     return null;
                 } else {

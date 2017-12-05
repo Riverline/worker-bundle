@@ -162,6 +162,10 @@ class AwsSQSv3 extends BaseProvider
         }
         $response = $this->sqs->receiveMessage($options);
 
+        if (is_null($response['Messages'])) {
+            return null;
+        }
+
         if (count($response['Messages']) > 0) {
             $workload = $response['Messages'][0];
 

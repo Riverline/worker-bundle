@@ -21,19 +21,29 @@
     "homepage": "https://github.com/Riverline/worker-bundle",
     "require":{
         "php":                          ">=5.3",
-        "symfony/console":              "*",
-        "symfony/dependency-injection": "*",
-        "symfony/config":               "*",
-        "symfony/http-kernel":          "*"
+        "symfony/console":              "^2.0",
+        "symfony/dependency-injection": "^2.0",
+        "symfony/config":               "^2.0",
+        "symfony/http-kernel":          "^2.0"
     },
-    "require-dev": {
+    "suggest": {
         "amazonwebservices/aws-sdk-for-php": "*",
         "aws/aws-sdk-php":                   "*",
         "predis/predis":                     "*"
     },
+    "require-dev": {
+        "phpunit/phpunit":                   "^4.8",
+        "aws/aws-sdk-php":                   "^2.8",
+        "predis/predis":                     "^1.1"
+    },
     "autoload":{
-        "psr-0":{
-            "Riverline\\WorkerBundle": "src/"
+        "psr-4":{
+            "Riverline\\WorkerBundle\\": "src/"
+        }
+    },
+    "autoload-dev":{
+        "psr-4":{
+            "Riverline\\WorkerBundle\\": "tests/"
         }
     }
 }

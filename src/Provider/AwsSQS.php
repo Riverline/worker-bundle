@@ -4,6 +4,12 @@ namespace Riverline\WorkerBundle\Provider;
 
 use Riverline\WorkerBundle\Queue\Queue;
 
+/**
+ * Class AwsSQS
+ * @package Riverline\WorkerBundle\Provider
+ *
+ * @deprecated Use SDK v2 or v3
+ */
 class AwsSQS extends BaseProvider
 {
     /**
@@ -16,8 +22,16 @@ class AwsSQS extends BaseProvider
      */
     protected $queueUrls = array();
 
+    /**
+     * AwsSQS constructor.
+     *
+     * @param array  $awsConfiguration
+     * @param string $region
+     */
     public function __construct($awsConfiguration, $region = null)
     {
+        trigger_error("AwsSDK Provider is no longer maintened. Please use Aws Sdk v2/v3", E_USER_DEPRECATED);
+
         if (!class_exists('AmazonSQS')) {
             throw new \LogicException("Can't find AWS SDK");
         }

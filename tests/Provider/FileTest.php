@@ -2,9 +2,14 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
+use PHPUnit\Framework\TestCase;
 use Riverline\WorkerBundle\Provider\File as FileProvider;
 
-class FileTest extends \PHPUnit_Framework_TestCase
+/**
+ * Class FileTest
+ * @package Riverline\WorkerBundle\Provider
+ */
+class FileTest extends TestCase
 {
 
     /**
@@ -14,7 +19,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->provider = new FileProvider($GLOBALS['FILE_DIRECTORY']);
+        $this->provider = new FileProvider();
     }
 
     public function testCreateQueue()

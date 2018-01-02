@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="tests/bootstrap.php" colors="true">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/4.1/phpunit.xsd"
+         backupGlobals="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
     <php>
         <!-- AWS SQS -->
         <var name="AWS_ACCESS"        value="" />
@@ -12,12 +17,11 @@
         <!-- File -->
         <var name="FILE_DIRECTORY"    value="" />
         <!-- PRedis -->
-        <var name="PREDIS_SERVER"     value="" />
+        <var name="PREDIS_SERVER"     value="redis" />
     </php>
     <testsuites>
         <testsuite name="WorkerBundle Test Suite">
-            <directory>tests/Riverline/WorkerBundle/DependencyInjection</directory>
-            <file>tests/Riverline/WorkerBundle/Provider/MockupTest.php</file>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

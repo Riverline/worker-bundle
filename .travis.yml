@@ -1,6 +1,8 @@
-language: php
-php:
-  - 5.4
-before_script:
-  - wget http://getcomposer.org/composer.phar
-  - php composer.phar install
+sudo: required
+
+services:
+  - docker
+
+script:
+  - docker-compose run --rm --no-deps --user $UID app composer update
+  - docker-compose run --rm --user $UID app vendor/bin/phpunit

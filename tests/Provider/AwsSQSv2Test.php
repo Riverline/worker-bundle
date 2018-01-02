@@ -2,7 +2,11 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-abstract class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
+/**
+ * Class AwsSQSv2Test
+ * @package Riverline\WorkerBundle\Provider
+ */
+class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
 {
 
     /**
@@ -13,8 +17,8 @@ abstract class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->provider = new AwsSQSv2(array(
-            'key'      => "",
-            'secret'   => "",
+            'key'      => "key",
+            'secret'   => "secret",
             'region'   => "us-east-1",
             'version'  => "latest",
             'endpoint' => 'http://aws:4576',
@@ -81,11 +85,12 @@ abstract class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
 
     public function testGetQueueOptions()
     {
+        $this->provider->createQueue("RiverlineWorkerBundleTest_queue1", ["VisibilityTimeout" => 60]);
         $queueOptions = $this->provider->getQueueOptions("RiverlineWorkerBundleTest_queue1");
 
         $this->assertTrue(is_array($queueOptions));
-        $this->assertArrayHasKey('MessageRetentionPeriod', $queueOptions);
-        $this->assertEquals(10*3600*24, $queueOptions['MessageRetentionPeriod']);
+        $this->assertArrayHasKey('VisibilityTimeout', $queueOptions);
+        $this->assertEquals(60, $queueOptions['VisibilityTimeout']);
     }
 
     public function testListQueues()
@@ -106,6 +111,7 @@ abstract class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
 
     public function testUpdateQueue()
     {
+        $this->provider->createQueue("RiverlineWorkerBundleTest_queue2", ["VisibilityTimeout" => 60]);
         $queueUpdated = $this->provider->updateQueue("RiverlineWorkerBundleTest_queue2", array('ReceiveMessageWaitTimeSeconds' => '20'));
         $this->assertTrue($queueUpdated);
 

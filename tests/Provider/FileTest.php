@@ -19,7 +19,7 @@ class FileTest extends TestCase
 
     public function setUp()
     {
-        $this->provider = new FileProvider($GLOBALS['FILE_DIRECTORY']);
+        $this->provider = new FileProvider();
     }
 
     public function testCreateQueue()

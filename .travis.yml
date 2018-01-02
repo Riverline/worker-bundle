@@ -3,6 +3,12 @@ sudo: required
 services:
   - docker
 
+before_script:
+  - docker-compose up -d --build
+
 script:
-  - docker-compose run --rm --no-deps --user $UID app composer update
-  - docker-compose run --rm --user $UID app vendor/bin/phpunit
+  - docker-compose exec --user $UID app composer update
+  - docker-compose exec --user $UID app vendor/bin/phpunit --debug
+
+after_script:
+  - docker-compose down --rmi local -v

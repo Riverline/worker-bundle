@@ -97,7 +97,7 @@ class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
     {
         $queues = $this->provider->listQueues("RiverlineWorkerBundleTest");
 
-        $this->assertEquals(2, count($queues));
+        $this->assertEquals(1, count($queues));
     }
 
     public function testQueueExists()

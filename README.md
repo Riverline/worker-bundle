@@ -32,7 +32,7 @@ riverline_worker:
         sqs: #v3
             class: Riverline\WorkerBundle\Provider\AwsSQSv3
             arguments:
-                config:
+                -
                     version: "latest"
                     region: "us-west-2"
                     credentials:

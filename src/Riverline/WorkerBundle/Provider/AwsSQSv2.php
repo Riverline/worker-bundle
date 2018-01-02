@@ -163,6 +163,10 @@ class AwsSQSv2 extends BaseProvider
         }
         $response = $this->sqs->receiveMessage($options);
 
+        if (is_null($response['Messages'])) {
+            return null;
+        }
+
         if (count($response['Messages']) > 0) {
             $workload = $response['Messages'][0];
 
@@ -194,7 +198,7 @@ class AwsSQSv2 extends BaseProvider
                 ));
                 $this->queueUrls[$queueName] = $response['QueueUrl'];
             } catch(SqsException $e) {
-                if ('AWS.SimpleQueueService.NonExistentQueue' === $e->getExceptionCode()) {
+                if ('AWS.SimpleQueueService.NonExistentQueue' === $e->getAwsErrorCode()) {
                     // Non existing queue
                     return null;
                 } else {

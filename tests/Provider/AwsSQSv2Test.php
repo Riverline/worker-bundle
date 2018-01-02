@@ -2,7 +2,7 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
+abstract class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
 {
 
     /**
@@ -13,9 +13,11 @@ class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->provider = new AwsSQSv2(array(
-            'key'    => $GLOBALS['AWS_ACCESS'],
-            'secret' => $GLOBALS['AWS_SECRET'],
-            'region' => $GLOBALS['AWS_REGION']
+            'key'      => "",
+            'secret'   => "",
+            'region'   => "us-east-1",
+            'version'  => "latest",
+            'endpoint' => 'http://aws:4576',
         ));
     }
 

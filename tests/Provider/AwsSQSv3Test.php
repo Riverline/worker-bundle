@@ -12,13 +12,15 @@ class AwsSQSv3Test extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped("SDK v2 is used");
         $this->provider = new AwsSQSv3(array(
             'credentials' => array(
-                'key'    =>  $GLOBALS['AWS_ACCESS'],
-                'secret' =>  $GLOBALS['AWS_SECRET'],
+                'key'    => "",
+                'secret' => "",
             ),
-            'region' =>  $GLOBALS['AWS_REGION'],
-            'version' => $GLOBALS['AWS_VERSION']
+            'region'      => "us-east-1",
+            'version'     => "latest",
+            'endpoint'    => 'http://aws:4576',
         ));
     }
 

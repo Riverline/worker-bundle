@@ -2,7 +2,13 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class MockupTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Class MockupTest
+ * @package Riverline\WorkerBundle\Provider
+ */
+class MockupTest extends TestCase
 {
     /**
      * @var Semaphore

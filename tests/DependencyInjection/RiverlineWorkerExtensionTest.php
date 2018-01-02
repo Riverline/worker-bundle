@@ -2,9 +2,14 @@
 
 namespace Riverline\WorkerBundle\DependencyInjection;
 
+use PHPUnit\Framework\TestCase;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class RiverlineWorkerExtensionTest extends \PHPUnit_Framework_TestCase
+/**
+ * Class RiverlineWorkerExtensionTest
+ * @package Riverline\WorkerBundle\DependencyInjection
+ */
+class RiverlineWorkerExtensionTest extends TestCase
 {
     public function testLoad()
     {

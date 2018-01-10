@@ -2,7 +2,7 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class Semaphore extends BaseProvider
+class Semaphore extends AbstractBaseProvider
 {
     protected $semaphore;
 

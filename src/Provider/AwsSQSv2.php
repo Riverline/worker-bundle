@@ -8,7 +8,7 @@ use Aws\Sqs\SqsClient;
 use Aws\Sqs\Enum\QueueAttribute;
 use Aws\Sqs\Exception\SqsException;
 
-class AwsSQSv2 extends BaseProvider
+class AwsSQSv2 extends AbstractBaseProvider
 {
     /**
      * @var \Aws\Sqs\SqsClient;
@@ -232,5 +232,4 @@ class AwsSQSv2 extends BaseProvider
 
         return true;
     }
-
 }

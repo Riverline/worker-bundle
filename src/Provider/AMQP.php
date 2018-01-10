@@ -2,7 +2,7 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-class AMQP extends BaseProvider
+class AMQP extends AbstractBaseProvider
 {
     protected $channel;
 

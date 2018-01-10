@@ -7,6 +7,7 @@ services:
     links:
       - redis
       - aws
+      - activemq
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app
@@ -20,3 +21,12 @@ services:
     environment:
       - SERVICES=sqs
       - HOSTNAME_EXTERNAL=aws
+
+  activemq:
+    image: webcenter/activemq:latest
+    ports:
+      - 8161:8161
+    environment:
+      - ACTIVEMQ_USERS_USER=password
+    volumes:
+      - ./docker/activemq/activemq.xml:/opt/activemq/conf/activemq.xml

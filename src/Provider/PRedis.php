@@ -9,7 +9,7 @@ use Riverline\WorkerBundle\Queue\Queue;
  * Class PRedis
  * @package Riverline\WorkerBundle\Provider
  */
-class PRedis extends BaseProvider
+class PRedis extends AbstractBaseProvider
 {
     /**
      * @var Client
@@ -125,6 +125,4 @@ class PRedis extends BaseProvider
         // No option on queue ... nothing to do
         return true;
     }
-
-
 }

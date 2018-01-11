@@ -9,7 +9,7 @@ use Riverline\WorkerBundle\Queue\Queue;
  *
  * @package Riverline\WorkerBundle\Provider
  */
-class File extends BaseProvider
+class File extends AbstractBaseProvider
 {
 
     /**
@@ -188,5 +188,4 @@ class File extends BaseProvider
 
         return isset($this->memoryQueues[$queueName]);
     }
-
 }

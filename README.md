@@ -46,6 +46,15 @@ riverline_worker:
             class: Riverline\WorkerBundle\Provider\AMQP
         semaphore:
             class: Riverline\WorkerBundle\Provider\Semaphore
+        activemq:
+            class: Riverline\WorkerBundle\Provider\ActiveMQ
+            arguments:
+                - tcp://localhost:61613
+                - login
+                - passcode
+                - false        # Boolean indicates if message is persistent
+                - false        # Boolean indicates if broker statistics plugin is enabled http://activemq.apache.org/statisticsplugin.html
+
     queues:
         queue1:
             name: ThisIsMyQueue

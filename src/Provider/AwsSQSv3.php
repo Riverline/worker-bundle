@@ -7,7 +7,7 @@ use Aws\Sqs\SqsClient;
 use Aws\Sqs\Exception\SqsException;
 use Riverline\WorkerBundle\Queue\Queue;
 
-class AwsSQSv3 extends BaseProvider
+class AwsSQSv3 extends AbstractBaseProvider
 {
     /**
      * @var \Aws\Sqs\SqsClient;

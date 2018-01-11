@@ -10,7 +10,7 @@ use Riverline\WorkerBundle\Queue\Queue;
  *
  * @deprecated Use SDK v2 or v3
  */
-class AwsSQS extends BaseProvider
+class AwsSQS extends AbstractBaseProvider
 {
     /**
      * @var \AmazonSQS

@@ -111,6 +111,4 @@ class Mockup implements ProviderInterface
     {
         self::$queueOptions[$queueName] = $queueOptions;
     }
-
-
 }

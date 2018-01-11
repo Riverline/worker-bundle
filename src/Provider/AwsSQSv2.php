@@ -2,12 +2,13 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
-use Aws\Sdk;
-use Aws\Sqs\SqsClient;
-use Aws\Sqs\Exception\SqsException;
 use Riverline\WorkerBundle\Queue\Queue;
 
-class AwsSQSv3 extends BaseProvider
+use Aws\Sqs\SqsClient;
+use Aws\Sqs\Enum\QueueAttribute;
+use Aws\Sqs\Exception\SqsException;
+
+class AwsSQSv2 extends AbstractBaseProvider
 {
     /**
      * @var \Aws\Sqs\SqsClient;
@@ -21,11 +22,11 @@ class AwsSQSv3 extends BaseProvider
 
     public function __construct($awsConfiguration)
     {
-        if (!version_compare(Sdk::VERSION, "3.0.0", ">=")) {
-            throw new \LogicException("Can't find AWS SDK >= 3.0.0");
+        if (!class_exists('\Aws\Sqs\SqsClient')) {
+            throw new \LogicException("Can't find AWS SDK >= 2.0.0");
         }
 
-        $this->sqs = new SqsClient($awsConfiguration);
+        $this->sqs = SqsClient::factory($awsConfiguration);
     }
 
     /**
@@ -34,12 +35,12 @@ class AwsSQSv3 extends BaseProvider
     public function createQueue($queueName, array $queueOptions = array())
     {
         // Enable Long Polling by default
-        if (!isset($queueOptions['ReceiveMessageWaitTimeSeconds'])) {
-            $queueOptions['ReceiveMessageWaitTimeSeconds'] = 20;
+        if (! isset($queueOptions[QueueAttribute::RECEIVE_MESSAGE_WAIT_TIME_SECONDS])) {
+            $queueOptions[QueueAttribute::RECEIVE_MESSAGE_WAIT_TIME_SECONDS] = 20;
         }
 
         $response = $this->sqs->createQueue(array(
-            'QueueName' => $queueName,
+            'QueueName'  => $queueName,
             'Attributes' => $queueOptions
         ));
 
@@ -76,7 +77,7 @@ class AwsSQSv3 extends BaseProvider
     public function getQueueOptions($queueName)
     {
         $response = $this->sqs->getQueueAttributes(array(
-            'QueueUrl' => $this->getQueueUrl($queueName),
+            'QueueUrl'       => $this->getQueueUrl($queueName),
             'AttributeNames' => array('All')
         ));
 
@@ -89,14 +90,14 @@ class AwsSQSv3 extends BaseProvider
     public function listQueues($queueNamePrefix = null)
     {
         $options = array();
-        if (!is_null($queueNamePrefix)) {
+        if (! is_null($queueNamePrefix)) {
             $options['QueueNamePrefix'] = $queueNamePrefix;
         }
 
         $response = $this->sqs->listQueues($options);
 
         $queues = array();
-        foreach ($response['QueueUrls'] as $queueUrl) {
+        foreach($response['QueueUrls'] as $queueUrl) {
             $queues[] = $this->extractQueueNameFromUrl($queueUrl);
         }
 
@@ -118,19 +119,19 @@ class AwsSQSv3 extends BaseProvider
     {
         $queueUrl = $this->getQueueUrl($queueName);
 
-        $batchWorkloads = array();
+        $batchWorkloads  = array();
         $batchWorkloadId = 1;
-        foreach ($workloads as $workload) {
+        foreach($workloads as $workload) {
             $workload = base64_encode(gzcompress(serialize($workload), 9));
             $batchWorkloads[] = array(
-                'Id' => $batchWorkloadId++,
+                'Id'          => $batchWorkloadId++,
                 'MessageBody' => $workload
             );
         }
 
         $this->sqs->sendMessageBatch(array(
             'QueueUrl' => $queueUrl,
-            'Entries' => $batchWorkloads
+            'Entries'  => $batchWorkloads
         ));
     }
 
@@ -142,7 +143,7 @@ class AwsSQSv3 extends BaseProvider
         $queueUrl = $this->getQueueUrl($queueName);
         $workload = base64_encode(gzcompress(serialize($workload), 9));
         $this->sqs->sendMessage(array(
-            'QueueUrl' => $queueUrl,
+            'QueueUrl'    => $queueUrl,
             'MessageBody' => $workload
         ));
     }
@@ -154,7 +155,7 @@ class AwsSQSv3 extends BaseProvider
     {
         $queueUrl = $this->getQueueUrl($queueName);
         $options = array(
-            'QueueUrl' => $queueUrl,
+            'QueueUrl'            => $queueUrl,
             'MaxNumberOfMessages' => 1,
         );
         if ($timeout > 0) {
@@ -170,7 +171,7 @@ class AwsSQSv3 extends BaseProvider
             $workload = $response['Messages'][0];
 
             $this->sqs->deleteMessage(array(
-                'QueueUrl' => $queueUrl,
+                'QueueUrl'      => $queueUrl,
                 'ReceiptHandle' => $workload['ReceiptHandle']
             ));
             if (md5($workload['Body']) == $workload['MD5OfBody']) {
@@ -190,15 +191,14 @@ class AwsSQSv3 extends BaseProvider
      */
     private function getQueueUrl($queueName)
     {
-        if (!isset($this->queueUrls[$queueName])) {
+        if (! isset($this->queueUrls[$queueName])) {
             try {
                 $response = $this->sqs->getQueueUrl(array(
-                    'QueueName' => $queueName
+                    'QueueName' =>$queueName
                 ));
-
                 $this->queueUrls[$queueName] = $response['QueueUrl'];
-            } catch (SqsException $e) {
-                if (strpos($e->getAwsErrorCode(), 'NonExistentQueue') !== false) {
+            } catch(SqsException $e) {
+                if ('AWS.SimpleQueueService.NonExistentQueue' === $e->getAwsErrorCode()) {
                     // Non existing queue
                     return null;
                 } else {
@@ -226,7 +226,7 @@ class AwsSQSv3 extends BaseProvider
     public function updateQueue($queueName, array $queueOptions = array())
     {
         $this->sqs->setQueueAttributes(array(
-            'QueueUrl' => $this->getQueueUrl($queueName),
+            'QueueUrl'   => $this->getQueueUrl($queueName),
             'Attributes' => $queueOptions
         ));
 

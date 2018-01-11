@@ -1,0 +1,32 @@
+version: '2'
+
+services:
+  app:
+    build:
+      context: .
+    links:
+      - redis
+      - aws
+      - activemq
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    command: "tail -f /dev/null"
+
+  redis:
+    image: redis:3-alpine
+
+  aws:
+    image: localstack/localstack
+    environment:
+      - SERVICES=sqs
+      - HOSTNAME_EXTERNAL=aws
+
+  activemq:
+    image: webcenter/activemq:latest
+    ports:
+      - 8161:8161
+    environment:
+      - ACTIVEMQ_USERS_USER=password
+    volumes:
+      - ./docker/activemq/activemq.xml:/opt/activemq/conf/activemq.xml

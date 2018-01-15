@@ -8,7 +8,7 @@
 
 ## Requirements
 
-* PHP 5.3
+* PHP 5.6
 * Symfony 2.x
 
 ## Installation
@@ -66,17 +66,56 @@ riverline_worker:
 
 ## Usage
 
+### Provider / Queue instances
+
 You can access any configured provider or queue through the Symfony Container
 
 ```php
 <?php
 
-$provider = $this->get('riverline_worker.provider.predis');
+$provider = $container->get('riverline_worker.provider.predis');
 $provider->put('ThisIsMyQueue', 'Hello World');
 
-$queue = $this->get('riverline_worker.queue.queue1');
+$queue = $container->get('riverline_worker.queue.queue1');
 echo $queue->count()." item(s) in the queue";
 ```
+
+All configured providers are available in a collection
+
+```php
+<?php
+
+$collection = $container->get('riverline.worker_bundle.providers.collection');
+$collection->all(); # Return a providers collection
+
+$collection->find(function(\Doctrine\Common\Collections\ArrayCollection $providers) {
+    if ($condition) {
+        return $providers->get("activemq");
+    }
+    
+    return $providers->get("predis"); 
+}); # Return provider depends of your own logic
+
+```
+
+Instead of using closure, you can implements your own strategy class
+
+```php
+<?php
+
+class FirstStrategy implements \Riverline\WorkerBundle\Provider\Collection\Strategy\StrategyInterface 
+{    
+    public function choose(\Doctrine\Common\Collections\ArrayCollection $providerCollection)
+    {
+        return $providerCollection->first();
+    }
+}
+
+$collection = $container->get('riverline.worker_bundle.providers.collection');
+$collection->find(new FirstStrategy()); # Return first configured provider
+```
+
+### Workers
 
 You can easily create Workers
 
@@ -87,9 +126,7 @@ You can easily create Workers
 
 namespace Acme\DemoBundle\Command;
 
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Riverline\WorkerBundle\Command\Worker;
 use Riverline\WorkerBundle\Command\WorkerControlCodes;

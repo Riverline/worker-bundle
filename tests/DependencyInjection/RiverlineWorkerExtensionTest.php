@@ -2,44 +2,59 @@
 
 namespace Riverline\WorkerBundle\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
-use \Symfony\Component\DependencyInjection\ContainerBuilder;
+use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
+use Riverline\WorkerBundle\Provider\Collection\ProviderCollection;
+use Riverline\WorkerBundle\Provider\Semaphore;
+use Riverline\WorkerBundle\Queue\Queue;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class RiverlineWorkerExtensionTest
  * @package Riverline\WorkerBundle\DependencyInjection
  */
-class RiverlineWorkerExtensionTest extends TestCase
+class RiverlineWorkerExtensionTest extends AbstractExtensionTestCase
 {
-    public function testLoad()
+    /**
+     *
+     */
+    public function testShouldLoad()
     {
-        $containerBuilder = new ContainerBuilder();
-        $config = array(
-            'riverline_worker' => array(
-                'providers' => array(
-                    'semaphore' => array(
-                        'class'   => 'Riverline\WorkerBundle\Provider\Semaphore',
-                    )
-                ),
-                'queues' => array(
-                    'test' => array(
+        $this->load(
+            [
+                'providers' => [
+                    'semaphore' => [
+                        'class' => Semaphore::class,
+                    ],
+                ],
+                'queues'    => [
+                    'test' => [
                         'provider' => 'semaphore',
-                        'name'     => 'test'
-                    )
-                )
-            )
+                        'name'     => 'test',
+                    ],
+                ],
+            ]
         );
 
-        $extension = new RiverlineWorkerExtension();
+        $this->assertContainerBuilderHasService('riverline_worker.provider.semaphore', Semaphore::class);
+        $this->assertContainerBuilderHasService('riverline_worker.queue.test', Queue::class);
+        $this->assertContainerBuilderHasService('riverline.worker_bundle.providers.collection', ProviderCollection::class);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'riverline.worker_bundle.providers.collection',
+            'addProvider',
+            [
+                'semaphore',
+                new Reference('riverline_worker.provider.semaphore'),
+            ]
+        );
+    }
 
-        $extension->load($config, $containerBuilder);
-
-        $provider = $containerBuilder->get('riverline_worker.provider.semaphore');
-
-        $this->assertInstanceOf('Riverline\WorkerBundle\Provider\Semaphore', $provider);
-
-        $queue = $containerBuilder->get('riverline_worker.queue.test');
-
-        $this->assertInstanceOf('Riverline\WorkerBundle\Queue\Queue', $queue);
+    /**
+     * {@inheritdoc}
+     */
+    protected function getContainerExtensions()
+    {
+        return [
+            new RiverlineWorkerExtension(),
+        ];
     }
 }

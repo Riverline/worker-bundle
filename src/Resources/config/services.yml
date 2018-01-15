@@ -1,0 +1,3 @@
+services:
+    riverline.worker_bundle.providers.collection:
+        class: Riverline\WorkerBundle\Provider\Collection\ProviderCollection

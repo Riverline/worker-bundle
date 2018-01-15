@@ -77,7 +77,7 @@ interface ProviderInterface
     public function listQueues($queueNamePrefix = null);
 
     /**
-     * Put multpile workload in the queue
+     * Put multiple workload in the queue
      * @abstract
      *
      * @param string $queueName The queue name

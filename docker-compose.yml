@@ -8,6 +8,7 @@ services:
       - redis
       - aws
       - activemq
+      - gearman
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app
@@ -30,3 +31,8 @@ services:
       - ACTIVEMQ_USERS_USER=password
     volumes:
       - ./docker/activemq/activemq.xml:/opt/activemq/conf/activemq.xml
+
+  gearman:
+    image: artefactual/gearmand:latest
+    ports:
+      - 4730:4730

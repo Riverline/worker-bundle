@@ -14,5 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zlib1g-dev
 
 # PHP EXTENSIONS
-RUN docker-php-ext-install -j$(nproc) zip sysvmsg sysvshm \
+RUN apt-get install -y libgearman-dev \
+    && pecl install gearman \
+    && docker-php-ext-enable gearman \
+    && docker-php-ext-install -j$(nproc) zip sysvmsg sysvshm \
     && docker-php-source delete

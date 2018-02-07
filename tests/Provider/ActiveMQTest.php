@@ -38,12 +38,11 @@ class ActiveMQTest extends TestCase
         $this->emptyQueue("activemq_queue_empty");
         $this->assertSame(0, $this->provider->count("activemq_queue_empty"));
 
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 2; $i++) {
             $this->provider->put("activemq_queue_empty", "test".$i);
         }
 
-        $this->assertSame(100, $this->provider->count("activemq_queue_empty"));
-        $this->emptyQueue("activemq_queue_empty");
+        $this->assertSame(2, $this->provider->count("activemq_queue_empty"));
     }
 
     /**
@@ -90,7 +89,7 @@ class ActiveMQTest extends TestCase
         $this->assertSame("message1", $this->provider->get("activemq_get_1", 1));
         $this->assertSame("message2", $this->provider->get("activemq_get_2", 1));
     }
-    
+
     /**
      *
      */
@@ -120,6 +119,37 @@ class ActiveMQTest extends TestCase
 
         $this->provider->put("activemq_put_get", "coucou");
         $this->assertSame("coucou", $this->provider->get("activemq_put_get", 1));
+    }
+
+    /**
+     *
+     */
+    public function testRemainingCount()
+    {
+        $this->emptyQueue("activemq_remaining_count");
+
+        $this->provider->put("activemq_remaining_count", "coucou");
+        $this->provider->put("activemq_remaining_count", "coucou2");
+
+        $this->assertSame("coucou", $this->provider->get("activemq_remaining_count", 1));
+        $this->assertSame(1, $this->provider->count("activemq_remaining_count"));
+
+        $this->assertSame("coucou2", $this->provider->get("activemq_remaining_count", 1));
+        $this->assertSame(0, $this->provider->count("activemq_remaining_count"));
+    }
+
+    /**
+     *
+     */
+    public function testChangeQueue()
+    {
+        $this->emptyQueue("activemq_remaining_count");
+
+        $this->provider->put("activemq_change_queue_1", "message1");
+        $this->provider->put("activemq_change_queue_2", "message2");
+
+        $this->assertSame("message1", $this->provider->get("activemq_change_queue_1", 1));
+        $this->assertSame("message2", $this->provider->get("activemq_change_queue_2", 1));
     }
 
     /**

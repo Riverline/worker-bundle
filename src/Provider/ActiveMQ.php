@@ -43,6 +43,8 @@ class ActiveMQ extends AbstractBaseProvider
      * @param string $password
      * @param bool   $persistentMessage
      * @param bool   $statisticsPluginEnabled
+     *
+     * @throws \Stomp\Exception\ConnectionException
      */
     public function __construct(
         $brokerUri,
@@ -56,6 +58,7 @@ class ActiveMQ extends AbstractBaseProvider
         $this->client = new Client($connection);
         $this->client->setLogin($login, $password);
         $this->client->setSync(true);
+        $this->client->setClientId(uniqid());
 
         $this->stomp = new StatefulStomp($this->client);
 
@@ -80,19 +83,23 @@ class ActiveMQ extends AbstractBaseProvider
                 "reply-to"    => $tempQueueName,
                 "destination" => "ActiveMQ.Statistics.Destination.".$queueName,
             ]
-        ), true);
-
-        $subscriptionId = $this->stomp->subscribe($tempQueueName);
+        ));
 
         $this->client->getConnection()->setReadTimeout(60);
+        $this->subscribe($tempQueueName);
 
-        $frame = $this->stomp->read();
-        $this->stomp->unsubscribe($subscriptionId);
+        while ($frame = $this->stomp->read()) {
+            if ($frame->getHeaders()["destination"] === $tempQueueName) {
+                break;
+            }
+        }
 
         if (false === $frame) {
             // No queue existing
             return 0;
         }
+
+        $this->stomp->ack($frame);
 
         try {
             $statistics = new \SimpleXMLElement($frame->body);
@@ -121,11 +128,15 @@ class ActiveMQ extends AbstractBaseProvider
     {
         $this->client->getConnection()->setReadTimeout($timeout ?: 60, 0);
 
-        $queueName = $this->getQueueName($queueName);
+        $queueName      = $this->getQueueName($queueName);
 
-        $subId = $this->stomp->subscribe($queueName);
+        $this->subscribe($queueName);
+
         $frame = $this->stomp->read();
-        $this->stomp->unsubscribe($subId);
+
+        if ($frame) {
+            $this->stomp->ack($frame);
+        }
 
         return $frame ? unserialize($frame->body) : null;
     }
@@ -161,5 +172,22 @@ class ActiveMQ extends AbstractBaseProvider
     private function getQueueName($queueName)
     {
         return sprintf("/queue/%s", $queueName);
+    }
+
+    private function subscribe($queueName)
+    {
+        $subscription = $this->stomp->getSubscriptions()->getLast();
+
+        if (false === $subscription || $subscription->getDestination() !== $queueName) {
+            if ($subscription) {
+                $this->stomp->unsubscribe($subscription->getSubscriptionId());
+            }
+
+            $this->stomp->subscribe(
+                $queueName,
+                null,
+                "client-individual"
+            );
+        }
     }
 }

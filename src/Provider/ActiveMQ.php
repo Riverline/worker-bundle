@@ -174,6 +174,9 @@ class ActiveMQ extends AbstractBaseProvider
         return sprintf("/queue/%s", $queueName);
     }
 
+    /**
+     * @param string $queueName
+     */
     private function subscribe($queueName)
     {
         $subscription = $this->stomp->getSubscriptions()->getLast();
@@ -186,7 +189,10 @@ class ActiveMQ extends AbstractBaseProvider
             $this->stomp->subscribe(
                 $queueName,
                 null,
-                "client-individual"
+                "client-individual",
+                [
+                    "activemq.prefetchSize" => 1,
+                ]
             );
         }
     }

@@ -130,12 +130,13 @@ class ActiveMQTest extends TestCase
 
         $this->provider->put("activemq_remaining_count", "coucou");
         $this->provider->put("activemq_remaining_count", "coucou2");
+        $this->provider->put("activemq_remaining_count", "coucou3");
 
         $this->assertSame("coucou", $this->provider->get("activemq_remaining_count", 1));
-        $this->assertSame(1, $this->provider->count("activemq_remaining_count"));
+        $this->assertSame(2, $this->provider->count("activemq_remaining_count"));
 
         $this->assertSame("coucou2", $this->provider->get("activemq_remaining_count", 1));
-        $this->assertSame(0, $this->provider->count("activemq_remaining_count"));
+        $this->assertSame(1, $this->provider->count("activemq_remaining_count"));
     }
 
     /**

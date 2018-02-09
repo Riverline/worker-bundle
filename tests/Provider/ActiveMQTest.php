@@ -26,6 +26,7 @@ class ActiveMQTest extends TestCase
             "user",
             "password",
             false,
+            true,
             true
         );
     }

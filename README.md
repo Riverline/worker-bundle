@@ -54,6 +54,7 @@ riverline_worker:
                 - passcode
                 - false        # Boolean indicates if message is persistent
                 - false        # Boolean indicates if broker statistics plugin is enabled http://activemq.apache.org/statisticsplugin.html
+                - true         # Boolean indicates if sync mode is enabled
 
     queues:
         queue1:

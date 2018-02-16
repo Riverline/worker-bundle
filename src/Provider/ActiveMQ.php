@@ -43,6 +43,7 @@ class ActiveMQ extends AbstractBaseProvider
      * @param string $password
      * @param bool   $persistentMessage
      * @param bool   $statisticsPluginEnabled
+     * @param bool   $syncEnabled
      *
      * @throws \Stomp\Exception\ConnectionException
      */
@@ -51,13 +52,14 @@ class ActiveMQ extends AbstractBaseProvider
         $login,
         $password,
         $persistentMessage = false,
-        $statisticsPluginEnabled = false
+        $statisticsPluginEnabled = false,
+        $syncEnabled = true
     ) {
         $connection = new Connection($brokerUri);
 
         $this->client = new Client($connection);
         $this->client->setLogin($login, $password);
-        $this->client->setSync(true);
+        $this->client->setSync($syncEnabled);
         $this->client->setClientId(uniqid());
 
         $this->stomp = new StatefulStomp($this->client);
@@ -75,8 +77,10 @@ class ActiveMQ extends AbstractBaseProvider
             throw new NotImplementedFeatureException("ActiveMQ statistics plugin must be enabled");
         }
 
-        $tempQueueName = sprintf("/temp-queue/%s", uniqid());
+        $this->client->getConnection()->setReadTimeout(60);
+        $this->unsubscribe();
 
+        $tempQueueName = sprintf("/temp-queue/%s", uniqid());
         $this->client->sendFrame(new Message(
             "",
             [
@@ -85,7 +89,6 @@ class ActiveMQ extends AbstractBaseProvider
             ]
         ));
 
-        $this->client->getConnection()->setReadTimeout(60);
         $this->subscribe($tempQueueName);
 
         while ($frame = $this->stomp->read()) {
@@ -128,14 +131,17 @@ class ActiveMQ extends AbstractBaseProvider
     {
         $this->client->getConnection()->setReadTimeout($timeout ?: 60, 0);
 
-        $queueName      = $this->getQueueName($queueName);
-
+        $queueName = $this->getQueueName($queueName);
         $this->subscribe($queueName);
 
-        $frame = $this->stomp->read();
-
-        if ($frame) {
-            $this->stomp->ack($frame);
+        while ($frame = $this->stomp->read()) {
+            if ($frame["destination"] === $queueName) {
+                $this->stomp->getClient()->sendFrame($this->client->getProtocol()->getAckFrame($frame), null);
+                break;
+            } else {
+                // Message redelivery ?
+                $this->stomp->getClient()->sendFrame($this->client->getProtocol()->getNackFrame($frame), null);
+            }
         }
 
         return $frame ? unserialize($frame->body) : null;
@@ -146,11 +152,9 @@ class ActiveMQ extends AbstractBaseProvider
      */
     public function multiPut($queueName, array $workloads)
     {
-        $this->stomp->begin();
         foreach ($workloads as $workload) {
             $this->put($queueName, $workload);
         }
-        $this->stomp->commit();
     }
 
     /**
@@ -158,6 +162,9 @@ class ActiveMQ extends AbstractBaseProvider
      */
     public function put($queueName, $workload)
     {
+        //Unsubscribe if already subsribed
+        $this->unsubscribe();
+
         $this->stomp->send(
             $this->getQueueName($queueName),
             new Message(serialize($workload), ['persistent' => $this->persistentMessage ? 'true' : 'false'])
@@ -189,11 +196,20 @@ class ActiveMQ extends AbstractBaseProvider
             $this->stomp->subscribe(
                 $queueName,
                 null,
-                "client-individual",
-                [
-                    "activemq.prefetchSize" => 1,
-                ]
+                "client-individual"
             );
+        }
+    }
+
+    /**
+     *
+     */
+    private function unsubscribe()
+    {
+        $subscription = $this->stomp->getSubscriptions()->getLast();
+
+        if ($subscription) {
+            $this->stomp->unsubscribe($subscription->getSubscriptionId());
         }
     }
 }

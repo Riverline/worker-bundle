@@ -196,7 +196,8 @@ class ActiveMQ extends AbstractBaseProvider
             $this->stomp->subscribe(
                 $queueName,
                 null,
-                "client-individual"
+                "client-individual",
+                ["activemq.prefetchSize" => 1]
             );
         }
     }

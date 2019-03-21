@@ -3,7 +3,6 @@
 namespace Riverline\WorkerBundle\Provider;
 
 use Riverline\WorkerBundle\Queue\Queue;
-
 use Aws\Sqs\SqsClient;
 use Aws\Sqs\Enum\QueueAttribute;
 use Aws\Sqs\Exception\SqsException;

@@ -119,4 +119,29 @@ class AwsSQSv2Test extends \PHPUnit_Framework_TestCase
         $this->assertTrue($queueUpdated);
     }
 
+    public function testMessagesPerRequest()
+    {
+        $provider = new AwsSQSv2(array(
+            'key'      => "key",
+            'secret'   => "secret",
+            'region'   => "us-east-1",
+            'version'  => "latest",
+            'endpoint' => 'http://aws:4576',
+        ), 5);
+
+        $queue = $provider->createQueue("RiverlineWorkerBundleTest_create_multi", array('VisibilityTimeout' => '15'));
+
+        $queue->multiPut(['a', 'b', 'c', 'd']);
+
+        $this->assertNotNull($queue->get());
+        $this->assertNotNull($queue->get());
+        $this->assertNotNull($queue->get());
+
+        $this->assertSame(0, $queue->count());
+
+        // Destruction
+        unset($provider, $queue);
+
+        $this->assertSame(1, $this->provider->count('RiverlineWorkerBundleTest_create_multi'));
+    }
 }

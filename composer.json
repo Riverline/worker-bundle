@@ -22,10 +22,10 @@
     "require":{
         "php":                          ">=5.6",
         "ext-zlib":                     "*",
-        "symfony/console":              "^2.0",
-        "symfony/dependency-injection": "^2.0",
-        "symfony/config":               "^2.0",
-        "symfony/http-kernel":          "^2.0"
+        "symfony/console":              "^2.0|^3.0",
+        "symfony/dependency-injection": "^2.0|^3.0",
+        "symfony/config":               "^2.0|^3.0",
+        "symfony/http-kernel":          "^2.0|^3.0"
     },
     "suggest": {
         "amazonwebservices/aws-sdk-for-php": "^1.0",

@@ -2,67 +2,69 @@
 
 namespace Riverline\WorkerBundle\Provider;
 
+use Riverline\WorkerBundle\Queue\Queue;
+
 class AwsSQSv3Test extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * @var \Riverline\WorkerBundle\Provider\AwsSQSv3
+     * @var AwsSQSv3
      */
     private $provider;
 
-    public function setUp()
+    public function setUp(): void
     {
-        $this->markTestSkipped("SDK v2 is used");
-        $this->provider = new AwsSQSv3(array(
-            'credentials' => array(
-                'key'    => "",
-                'secret' => "",
-            ),
-            'region'      => "us-east-1",
-            'version'     => "latest",
-            'endpoint'    => 'http://aws:4576',
-        ));
+        $this->provider = new AwsSQSv3(
+            [
+                'credentials' => [
+                    'key' => "",
+                    'secret' => "",
+                ],
+                'region' => "us-east-1",
+                'version' => "latest",
+                'endpoint' => 'http://aws:4566',
+            ]
+        );
     }
 
-    public function testCreateQueue()
+    public function testCreateQueue(): void
     {
-        $newQueue = $this->provider->createQueue("RiverlineWorkerBundleTest_create_v3", array('VisibilityTimeout' => '15'));
-
-        $this->assertTrue($newQueue instanceof \Riverline\WorkerBundle\Queue\Queue);
+        $newQueue = $this->provider->createQueue("RiverlineWorkerBundleTest_create_v3", ['VisibilityTimeout' => '15']);
+        self::assertInstanceOf(Queue::class, $newQueue);
     }
 
-    public function testPutArray()
+    public function testPutArray(): void
     {
-        $this->provider->put("RiverlineWorkerBundleTest_create_v3", array('name' => 'Romain'));
+        $this->provider->put("RiverlineWorkerBundleTest_create_v3", ['name' => 'Romain']);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $count = $this->provider->count("RiverlineWorkerBundleTest_create_v3");
 
-        $this->assertEquals(1, $count);
+        self::assertEquals(1, $count);
     }
 
-    public function testGetArray()
+    public function testGetArray(): void
     {
         $workload = $this->provider->get("RiverlineWorkerBundleTest_create_v3");
 
-        $this->assertSame(array('name' => 'Romain'), $workload);
+        self::assertSame(['name' => 'Romain'], $workload);
     }
 
-    public function testTimeout()
+    public function testTimeout(): void
     {
         $tic = time();
 
         $this->provider->get("RiverlineWorkerBundleTest_create_v3", 3);
 
-        $this->assertGreaterThanOrEqual(3, time() - $tic);
+        self::assertGreaterThanOrEqual(3, time() - $tic);
     }
 
-    public function testMultiPut()
+    public function testMultiPut(): void
     {
-        $workloads = array();
-        for($i = 0 ; $i < 10 ; $i++) {
+        $workloads = [];
+        for ($i = 0; $i < 10; $i++) {
             $workloads[] = "workload$i";
         }
 
@@ -72,48 +74,54 @@ class AwsSQSv3Test extends \PHPUnit_Framework_TestCase
 
         $count = $this->provider->count("RiverlineWorkerBundleTest_create_v3");
 
-        $this->assertEquals(10, $count);
+        self::assertEquals(10, $count);
     }
 
-    public function testDeleteQueue()
+    public function testDeleteQueue(): void
     {
         $deleted = $this->provider->deleteQueue("RiverlineWorkerBundleTest_create_v3");
 
-        $this->assertTrue($deleted);
+        self::assertTrue($deleted);
     }
 
-    public function testGetQueueOptions()
+    public function testGetQueueOptions(): void
     {
+        $this->provider->createQueue("RiverlineWorkerBundleTest_queue1", ["VisibilityTimeout" => 60]);
         $queueOptions = $this->provider->getQueueOptions("RiverlineWorkerBundleTest_queue1");
 
-        $this->assertTrue(is_array($queueOptions));
-        $this->assertArrayHasKey('MessageRetentionPeriod', $queueOptions);
-        $this->assertEquals(10*3600*24, $queueOptions['MessageRetentionPeriod']);
+        self::assertTrue(is_array($queueOptions));
+        self::assertArrayHasKey('MessageRetentionPeriod', $queueOptions);
+        self::assertEquals(345600, $queueOptions['MessageRetentionPeriod']);
     }
 
-    public function testListQueues()
+    public function testListQueues(): void
     {
         $queues = $this->provider->listQueues("RiverlineWorkerBundleTest");
 
-        $this->assertEquals(2, count($queues));
+        self::assertCount(1, $queues);
     }
 
-    public function testQueueExists()
+    public function testQueueExists(): void
     {
         $queueExists = $this->provider->queueExists("RiverlineWorkerBundleTest_queue1");
-        $this->assertTrue($queueExists);
+        self::assertTrue($queueExists);
 
         $queueNotExists = $this->provider->queueExists("RiverlineWorkerBundleTest_queueX");
-        $this->assertFalse($queueNotExists);
+        self::assertFalse($queueNotExists);
     }
 
-    public function testUpdateQueue()
+    public function testUpdateQueue(): void
     {
-        $queueUpdated = $this->provider->updateQueue("RiverlineWorkerBundleTest_queue2", array('ReceiveMessageWaitTimeSeconds' => '20'));
-        $this->assertTrue($queueUpdated);
+        $queueUpdated = $this->provider->updateQueue(
+            "RiverlineWorkerBundleTest_queue1",
+            ['ReceiveMessageWaitTimeSeconds' => '20']
+        );
+        self::assertTrue($queueUpdated);
 
-        $queueUpdated = $this->provider->updateQueue("RiverlineWorkerBundleTest_queue2", array('ReceiveMessageWaitTimeSeconds' => '0'));
-        $this->assertTrue($queueUpdated);
+        $queueUpdated = $this->provider->updateQueue(
+            "RiverlineWorkerBundleTest_queue1",
+            ['ReceiveMessageWaitTimeSeconds' => '0']
+        );
+        self::assertTrue($queueUpdated);
     }
-
 }

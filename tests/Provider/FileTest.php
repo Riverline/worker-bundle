@@ -4,6 +4,7 @@ namespace Riverline\WorkerBundle\Provider;
 
 use PHPUnit\Framework\TestCase;
 use Riverline\WorkerBundle\Provider\File as FileProvider;
+use Riverline\WorkerBundle\Queue\Queue;
 
 /**
  * Class FileTest
@@ -13,45 +14,45 @@ class FileTest extends TestCase
 {
 
     /**
-     * @var \Riverline\WorkerBundle\Provider\File
+     * @var File
      */
     private $provider;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->provider = new FileProvider();
     }
 
-    public function testCreateQueue()
+    public function testCreateQueue(): void
     {
         $newQueue = $this->provider->createQueue("RiverlineWorkerBundleTest_file_create");
 
-        $this->assertTrue($newQueue instanceof \Riverline\WorkerBundle\Queue\Queue);
+        self::assertInstanceOf(Queue::class, $newQueue);
     }
 
-    public function testPutArray()
+    public function testPutArray(): void
     {
-        $this->provider->put("RiverlineWorkerBundleTest_file_create", array('name' => 'Romain'));
+        $this->provider->put("RiverlineWorkerBundleTest_file_create", ['name' => 'Romain']);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $count = $this->provider->count("RiverlineWorkerBundleTest_file_create");
 
-        $this->assertEquals(1, $count);
+        self::assertEquals(1, $count);
     }
 
-    public function testGetArray()
+    public function testGetArray(): void
     {
         $workload = $this->provider->get("RiverlineWorkerBundleTest_file_create");
 
-        $this->assertSame(array('name' => 'Romain'), $workload);
+        self::assertSame(['name' => 'Romain'], $workload);
     }
 
-    public function testMultiPut()
+    public function testMultiPut(): void
     {
-        $workloads = array();
-        for($i = 0 ; $i < 10 ; $i++) {
+        $workloads = [];
+        for ($i = 0; $i < 10; $i++) {
             $workloads[] = "workload$i";
         }
 
@@ -61,41 +62,41 @@ class FileTest extends TestCase
 
         $count = $this->provider->count("RiverlineWorkerBundleTest_file_create");
 
-        $this->assertEquals(10, $count);
+        self::assertEquals(10, $count);
     }
 
-    public function testDeleteQueue()
+    public function testDeleteQueue(): void
     {
         $deleted = $this->provider->deleteQueue("RiverlineWorkerBundleTest_file_create");
 
-        $this->assertTrue($deleted);
+        self::assertTrue($deleted);
     }
 
-    public function testListQueues()
+    public function testListQueues(): void
     {
         $this->provider->createQueue("RiverlineWorkerBundleTest_file_listqueue1");
         $this->provider->createQueue("RiverlineWorkerBundleTest_file_listqueue2");
 
         $queues = $this->provider->listQueues("RiverlineWorkerBundleTest");
 
-        $this->assertEquals(2, count($queues));
+        self::assertCount(2, $queues);
 
         $this->provider->deleteQueue("RiverlineWorkerBundleTest_file_listqueue1");
         $this->provider->deleteQueue("RiverlineWorkerBundleTest_file_listqueue2");
     }
 
-    public function testQueueExists()
+    public function testQueueExists(): void
     {
         $queueName = "RiverlineWorkerBundleTest_file_queue1";
         $this->provider->createQueue($queueName);
 
         $queueExists = $this->provider->queueExists($queueName);
-        $this->assertTrue($queueExists);
+        self::assertTrue($queueExists);
 
         $this->provider->deleteQueue($queueName);
 
         $queueNotExists = $this->provider->queueExists("RiverlineWorkerBundleTest_file_queueX");
-        $this->assertFalse($queueNotExists);
+        self::assertFalse($queueNotExists);
     }
 
 }

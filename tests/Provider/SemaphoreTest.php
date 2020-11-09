@@ -9,28 +9,28 @@ class SemaphoreTest extends \PHPUnit_Framework_TestCase
      */
     private $provider;
 
-    public function setUp()
+    public function setUp(): void
     {
         // clean
-        $this->provider = new Semaphore(array('id' => rand()));
+        $this->provider = new Semaphore(['id' => rand()]);
     }
 
-    public function testPutArray()
+    public function testPutArray(): void
     {
-        $this->provider->put('test', array('name' => 'Romain'));
+        $this->provider->put('test', ['name' => 'Romain']);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $count = $this->provider->count('test');
 
-        $this->assertEquals(1, $count);
+        self::assertEquals(1, $count);
     }
 
-    public function testGetArray()
+    public function testGetArray(): void
     {
         $workload = $this->provider->get('test');
 
-        $this->assertSame(array('name' => 'Romain'), $workload);
+        self::assertSame(['name' => 'Romain'], $workload);
     }
 }

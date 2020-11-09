@@ -3,6 +3,7 @@
 namespace Riverline\WorkerBundle\Provider;
 
 use PHPUnit\Framework\TestCase;
+use Riverline\WorkerBundle\Queue\Queue;
 
 /**
  * Class GearmanTest
@@ -11,17 +12,17 @@ use PHPUnit\Framework\TestCase;
 class GearmanTest extends TestCase
 {
     /**
-     * @var \Riverline\WorkerBundle\Queue\Queue
+     * @var Queue
      */
     private $queue;
 
     /**
      *
      */
-    public function setUp()
+    public function setUp(): void
     {
         // clean
-        $this->queue = new \Riverline\WorkerBundle\Queue\Queue(
+        $this->queue = new Queue(
             'Test',
             new Gearman("gearman")
         );
@@ -29,32 +30,32 @@ class GearmanTest extends TestCase
         $this->markTestSkipped("Tests should be fixed");
     }
 
-    public function testPutArray()
+    public function testPutArray(): void
     {
-        $this->queue->put(array('name' => 'Romain'));
+        $this->queue->put(['name' => 'Romain']);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $count = $this->queue->count();
 
-        $this->assertEquals(1, $count);
+        self::assertEquals(1, $count);
     }
 
-    public function testGetArray()
+    public function testGetArray(): void
     {
         $workload = $this->queue->get();
 
-        $this->assertSame(array('name' => 'Romain'), $workload);
+        self::assertSame(['name' => 'Romain'], $workload);
     }
 
-    public function testTimeout()
+    public function testTimeout(): void
     {
         $tic = time();
 
         $this->queue->get(5);
 
-        $this->assertGreaterThan(5, time() - $tic);
+        self::assertGreaterThan(5, time() - $tic);
     }
 
 }

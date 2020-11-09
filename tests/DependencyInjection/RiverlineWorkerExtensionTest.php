@@ -4,6 +4,8 @@ namespace Riverline\WorkerBundle\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
+use Riverline\WorkerBundle\Provider\Semaphore;
+use Riverline\WorkerBundle\Queue\Queue;
 
 /**
  * Class RiverlineWorkerExtensionTest
@@ -11,24 +13,24 @@ use \Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class RiverlineWorkerExtensionTest extends TestCase
 {
-    public function testLoad()
+    public function testLoad(): void
     {
         $containerBuilder = new ContainerBuilder();
-        $config = array(
-            'riverline_worker' => array(
-                'providers' => array(
-                    'semaphore' => array(
-                        'class'   => 'Riverline\WorkerBundle\Provider\Semaphore',
-                    )
-                ),
-                'queues' => array(
-                    'test' => array(
+        $config = [
+            'riverline_worker' => [
+                'providers' => [
+                    'semaphore' => [
+                        'class' => Semaphore::class,
+                    ]
+                ],
+                'queues' => [
+                    'test' => [
                         'provider' => 'semaphore',
-                        'name'     => 'test'
-                    )
-                )
-            )
-        );
+                        'name' => 'test'
+                    ]
+                ]
+            ]
+        ];
 
         $extension = new RiverlineWorkerExtension();
 
@@ -36,10 +38,10 @@ class RiverlineWorkerExtensionTest extends TestCase
 
         $provider = $containerBuilder->get('riverline_worker.provider.semaphore');
 
-        $this->assertInstanceOf('Riverline\WorkerBundle\Provider\Semaphore', $provider);
+        self::assertInstanceOf(Semaphore::class, $provider);
 
         $queue = $containerBuilder->get('riverline_worker.queue.test');
 
-        $this->assertInstanceOf('Riverline\WorkerBundle\Queue\Queue', $queue);
+        self::assertInstanceOf(Queue::class, $queue);
     }
 }

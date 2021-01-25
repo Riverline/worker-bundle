@@ -38,10 +38,18 @@ class AwsSQSv3 extends AbstractBaseProvider
             $queueOptions['ReceiveMessageWaitTimeSeconds'] = 20;
         }
 
-        $response = $this->sqs->createQueue(array(
-            'QueueName' => $queueName,
-            'Attributes' => $queueOptions
-        ));
+        // Extract queue tags from options
+        $tags = [];
+        if (array_key_exists('tags', $queueOptions)) {
+            $tags = (array) $queueOptions['tags'];
+            unset($queueOptions['tags']);
+        }
+
+        $response = $this->sqs->createQueue([
+            'QueueName'  => $queueName,
+            'Attributes' => $queueOptions,
+            'tags'       => $tags,
+        ]);
 
         return new Queue($this->extractQueueNameFromUrl($response['QueueUrl']), $this);
     }
